@@ -34,3 +34,48 @@ You can check out [the Next.js GitHub repository](https://github.com/vercel/next
 The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
 
 Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+
+# Capstone: Food Delivery Routing Simulator
+
+A web-based system to **simulate food-delivery routing in a city** and evaluate how different routing strategies perform under realistic constraints (distance/ETA accuracy, batching, driver assignment fairness vs efficiency, etc.).
+
+This project focuses on **system design + evaluation**, not inventing new routing algorithms.
+
+## Goals
+
+- Visualize orders, restaurants, drivers, and routes on a map.
+- Implement multiple routing / dispatch strategies (baseline → more realistic).
+- Compare strategies with clear metrics (ETA error, distance, on-time %, driver utilization, fairness).
+- Produce reproducible experiments and an interpretable results report.
+
+## Core Features (Planned)
+
+### Map + Simulation
+- Interactive map (orders, restaurants, drivers)
+- Playback controls (start/pause/step/speed)
+- Scenario generator (random + scripted scenarios)
+- Event timeline (order created → assigned → picked up → delivered)
+
+### Routing / Dispatch Strategies
+- **Baseline**: Haversine (straight-line), greedy assignment
+- **Improved**: road-network routing (via routing engine / API)
+- **Batching**: combine multiple deliveries per driver (simple heuristics)
+- **Fairness controls**: constraints or re-ranking to reduce driver inequity
+
+### Metrics / Evaluation
+- Total delivery time, mean/median delivery time
+- Distance traveled (and cost proxy)
+- On-time rate (vs SLA)
+- Driver utilization / idle time
+- Fairness indicators (e.g., variance of earnings/time, Gini-style measure)
+
+## Tech Stack (Proposed)
+
+- **Frontend**: Next.js (App Router), Leaflet for maps
+- **Backend**: Node.js (API routes or separate server)
+- **Data**: JSON scenario files + optional Postgres for persistence
+- **Routing**: start with Haversine; upgrade to road-network routing (e.g., OSRM/Valhalla/GraphHopper or a map API)
+
+> If you’re keeping this lightweight, start with “all local JSON” + deterministic random seeds.
+
+## Repo Structure (Suggested)
