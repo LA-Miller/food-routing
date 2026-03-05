@@ -1,0 +1,5 @@
+batch_index,batch_seed,algorithm_id,algorithm_label,driver_id,order_count,stop_count,total_km,eta_minutes,route_valid,default_algorithm_id
+1,123,greedy_nearest,Greedy Nearest Stop,driver_1,3,6,20.79,50,true,greedy_nearest
+1,123,paired_order_greedy,Greedy Paired Orders,driver_1,3,6,20.64,50,true,greedy_nearest
+2,124,greedy_nearest,Greedy Nearest Stop,driver_2,3,6,22.93,55,true,greedy_nearest
+2,124,paired_order_greedy,Greedy Paired Orders,driver_2,3,6,21.26,51,true,greedy_nearest

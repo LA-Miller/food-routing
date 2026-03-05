@@ -1,0 +1,56 @@
+{
+  "config": {
+    "seed": 123,
+    "batches": 2,
+    "ordersPerBatch": 3,
+    "radiusKm": 4,
+    "outputDir": "outputs/experiments",
+    "algorithmCount": 2,
+    "algorithms": [
+      {
+        "id": "greedy_nearest",
+        "label": "Greedy Nearest Stop",
+        "description": "Select the nearest available stop each step (pickup/dropoff unlocking)."
+      },
+      {
+        "id": "paired_order_greedy",
+        "label": "Greedy Paired Orders",
+        "description": "Select the next order by nearest pickup+dropoff pair, then deliver it immediately."
+      }
+    ]
+  },
+  "summary": [
+    {
+      "algorithm_id": "greedy_nearest",
+      "algorithm_label": "Greedy Nearest Stop",
+      "runs": 2,
+      "route_valid_rate": 1,
+      "total_km_mean": 21.86,
+      "total_km_median": 21.86,
+      "total_km_min": 20.79,
+      "total_km_max": 22.93,
+      "total_km_stddev": 1.07,
+      "eta_mean_min": 52.5,
+      "eta_median_min": 52.5,
+      "eta_min_min": 50,
+      "eta_max_min": 55,
+      "eta_stddev_min": 2.5
+    },
+    {
+      "algorithm_id": "paired_order_greedy",
+      "algorithm_label": "Greedy Paired Orders",
+      "runs": 2,
+      "route_valid_rate": 1,
+      "total_km_mean": 20.95,
+      "total_km_median": 20.95,
+      "total_km_min": 20.64,
+      "total_km_max": 21.26,
+      "total_km_stddev": 0.31,
+      "eta_mean_min": 50.5,
+      "eta_median_min": 50.5,
+      "eta_min_min": 50,
+      "eta_max_min": 51,
+      "eta_stddev_min": 0.5
+    }
+  ]
+}
