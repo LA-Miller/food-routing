@@ -1,5 +1,10 @@
 import { describe, it, expect } from "vitest";
-import { generateRoute } from "../lib/routing";
+import {
+  DEFAULT_ROUTING_ALGORITHM,
+  generateRoute,
+  getAvailableRoutingAlgorithms,
+  resolveRoutingAlgorithmId,
+} from "../lib/routing";
 
 const driver = { id: "d1", lat: 39.7684, lng: -86.1581 };
 
@@ -20,31 +25,48 @@ const sampleOrders = [
   },
 ];
 
+const algorithms = getAvailableRoutingAlgorithms().map((a) => a.id);
+
 describe("generateRoute()", () => {
+  for (const algorithm of algorithms) {
+    describe(`algorithm: ${algorithm}`, () => {
+      it("returns a route with all stops", () => {
+        const plan = generateRoute(driver, sampleOrders, { algorithm });
+        expect(plan.stops.length).toBe(4); // 2 pickups + 2 dropoffs
+      });
 
-  it("returns a route with stops", () => {
-    const plan = generateRoute(driver, sampleOrders);
-    expect(plan.stops.length).toBe(4); // 2 pickups + 2 dropoffs
-  });
+      it("ensures pickup occurs before dropoff", () => {
+        const plan = generateRoute(driver, sampleOrders, { algorithm });
 
-  it("ensures pickup occurs before dropoff", () => {
-    const plan = generateRoute(driver, sampleOrders);
+        const indexByKey = {};
+        plan.stops.forEach((stop, i) => {
+          indexByKey[`${stop.type}:${stop.orderId}`] = i;
+        });
 
-    const indexByKey = {};
-    plan.stops.forEach((stop, i) => {
-      indexByKey[`${stop.type}:${stop.orderId}`] = i;
+        for (const order of sampleOrders) {
+          expect(indexByKey[`PICKUP:${order.id}`]).toBeLessThan(
+            indexByKey[`DROPOFF:${order.id}`]
+          );
+        }
+      });
+
+      it("computes positive distance and ETA", () => {
+        const plan = generateRoute(driver, sampleOrders, { algorithm });
+        expect(plan.totalKm).toBeGreaterThan(0);
+        expect(plan.etaMinutes).toBeGreaterThan(0);
+      });
     });
+  }
 
-    for (const order of sampleOrders) {
-      expect(indexByKey[`PICKUP:${order.id}`])
-        .toBeLessThan(indexByKey[`DROPOFF:${order.id}`]);
-    }
+  it("falls back to default algorithm when unknown id is provided", () => {
+    const resolved = resolveRoutingAlgorithmId("not-a-real-algo");
+    expect(resolved).toBe(DEFAULT_ROUTING_ALGORITHM);
+
+    const fallbackPlan = generateRoute(driver, sampleOrders, { algorithm: "not-a-real-algo" });
+    const defaultPlan = generateRoute(driver, sampleOrders, { algorithm: DEFAULT_ROUTING_ALGORITHM });
+
+    expect(fallbackPlan.stops).toEqual(defaultPlan.stops);
+    expect(fallbackPlan.totalKm).toBe(defaultPlan.totalKm);
+    expect(fallbackPlan.etaMinutes).toBe(defaultPlan.etaMinutes);
   });
-
-  it("computes positive distance and ETA", () => {
-    const plan = generateRoute(driver, sampleOrders);
-    expect(plan.totalKm).toBeGreaterThan(0);
-    expect(plan.etaMinutes).toBeGreaterThan(0);
-  });
-
 });

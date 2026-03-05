@@ -1,4 +1,10 @@
-import { generateRoute } from "@/lib/routing";
+import {
+    DEFAULT_ROUTING_ALGORITHM,
+    generateRoute,
+    getAvailableRoutingAlgorithms,
+    getRoutingAlgorithmDetails,
+    resolveRoutingAlgorithmId,
+} from "@/lib/routing";
 
 const DEFAULT_SCENARIO = "downtown_two_orders";
 
@@ -115,6 +121,20 @@ const SCENARIOS = {
             },
         ],
     },
+    distance_eta_verification_route: {
+        label: "Distance/ETA Verification Route",
+        description: "Single direct run between two fixed coordinates for metric verification.",
+        driver: { id: "d5", lat: 39.88971, lng: -86.07932 },
+        orders: [
+            {
+                id: "o13",
+                restaurantName: "Verification Start",
+                customerName: "Verification End",
+                restaurant: { lat: 39.88971, lng: -86.07932 },
+                customer: { lat: 39.76957, lng: -86.17374 },
+            },
+        ],
+    },
 };
 
 function roundKm(km) {
@@ -205,9 +225,16 @@ function getScenarioById(id) {
 export async function GET(request) {
     const { searchParams } = new URL(request.url);
     const requestedScenarioId = searchParams.get("scenario");
-    const scenario = getScenarioById(requestedScenarioId);
+    const requestedAlgorithmId = searchParams.get("algorithm") ?? DEFAULT_ROUTING_ALGORITHM;
 
-    const baselinePlan = generateRoute(scenario.driver, scenario.orders);
+    const scenario = getScenarioById(requestedScenarioId);
+    const algorithmId = resolveRoutingAlgorithmId(requestedAlgorithmId);
+    const algorithm = getRoutingAlgorithmDetails(algorithmId);
+
+    const baselinePlan = generateRoute(scenario.driver, scenario.orders, {
+        algorithm: algorithmId,
+    });
+
     const roadRoute = await getRoadRoute([scenario.driver, ...baselinePlan.stops]);
 
     const hasRoadMetrics =
@@ -250,10 +277,14 @@ export async function GET(request) {
             label: scenario.label,
             description: scenario.description,
         },
+        algorithm,
         availableScenarios: getAvailableScenarios(),
+        availableAlgorithms: getAvailableRoutingAlgorithms(),
         driver: scenario.driver,
         orders: scenario.orders,
         plan,
         issues,
     });
 }
+
+
