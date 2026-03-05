@@ -79,3 +79,15 @@ This project focuses on **system design + evaluation**, not inventing new routin
 > If you’re keeping this lightweight, start with “all local JSON” + deterministic random seeds.
 
 ## Repo Structure (Suggested)
+## Seeded Batch Experiments
+
+Run reproducible batch comparisons across routing algorithms and export CSV/JSON metrics:
+
+```bash
+npm run experiment -- --seed 42 --batches 100 --orders 8 --radius-km 7
+```
+
+Outputs are written to timestamped folders under `outputs/experiments/` and include:
+- `runs.csv` (one row per batch x algorithm)
+- `summary_by_algorithm.csv` (aggregated metrics)
+- `summary.json` (config + summary metrics)

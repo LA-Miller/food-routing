@@ -7,7 +7,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "test": "vitest"
+    "test": "vitest",
+    "experiment": "node scripts/run-batch-experiments.js"
   },
   "dependencies": {
     "leaflet": "^1.9.4",
@@ -24,3 +25,4 @@
     "vitest": "^4.0.18"
   }
 }
+
