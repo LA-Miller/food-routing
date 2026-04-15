@@ -1,0 +1,140 @@
+{
+  "config": {
+    "seed": 20260305,
+    "batches": 2,
+    "ordersPerBatch": 4,
+    "radiusKm": 7,
+    "outputDir": "outputs\\algo-smoke",
+    "algorithmCount": 6,
+    "algorithms": [
+      {
+        "id": "greedy_nearest",
+        "label": "Greedy Nearest Stop",
+        "description": "Select the nearest available stop each step (pickup/dropoff unlocking)."
+      },
+      {
+        "id": "paired_order_greedy",
+        "label": "Greedy Paired Orders",
+        "description": "Select the next order by nearest pickup+dropoff pair, then deliver it immediately."
+      },
+      {
+        "id": "farthest_order_first",
+        "label": "Farthest Order First",
+        "description": "A deliberately wasteful heuristic that serves the farthest pickup first, then completes that order."
+      },
+      {
+        "id": "pickup_sweep_then_dropoff",
+        "label": "Pickup Sweep Then Dropoff Sweep",
+        "description": "Collect every pickup first, then start delivering all dropoffs afterward."
+      },
+      {
+        "id": "north_south_sweep",
+        "label": "North-South Sweep",
+        "description": "Alternates between the northernmost and southernmost remaining pickup to create visible zig-zagging."
+      },
+      {
+        "id": "longitude_bounce",
+        "label": "East-West Bounce",
+        "description": "Alternates between the easternmost and westernmost pickup to exaggerate cross-city route swings."
+      }
+    ]
+  },
+  "summary": [
+    {
+      "algorithm_id": "farthest_order_first",
+      "algorithm_label": "Farthest Order First",
+      "runs": 2,
+      "route_valid_rate": 1,
+      "total_km_mean": 55.785,
+      "total_km_median": 55.785,
+      "total_km_min": 48.56,
+      "total_km_max": 63.01,
+      "total_km_stddev": 7.225,
+      "eta_mean_min": 134,
+      "eta_median_min": 134,
+      "eta_min_min": 117,
+      "eta_max_min": 151,
+      "eta_stddev_min": 17
+    },
+    {
+      "algorithm_id": "greedy_nearest",
+      "algorithm_label": "Greedy Nearest Stop",
+      "runs": 2,
+      "route_valid_rate": 1,
+      "total_km_mean": 37.23,
+      "total_km_median": 37.23,
+      "total_km_min": 37.15,
+      "total_km_max": 37.31,
+      "total_km_stddev": 0.08,
+      "eta_mean_min": 89.5,
+      "eta_median_min": 89.5,
+      "eta_min_min": 89,
+      "eta_max_min": 90,
+      "eta_stddev_min": 0.5
+    },
+    {
+      "algorithm_id": "longitude_bounce",
+      "algorithm_label": "East-West Bounce",
+      "runs": 2,
+      "route_valid_rate": 1,
+      "total_km_mean": 52.01,
+      "total_km_median": 52.01,
+      "total_km_min": 43.33,
+      "total_km_max": 60.69,
+      "total_km_stddev": 8.68,
+      "eta_mean_min": 125,
+      "eta_median_min": 125,
+      "eta_min_min": 104,
+      "eta_max_min": 146,
+      "eta_stddev_min": 21
+    },
+    {
+      "algorithm_id": "north_south_sweep",
+      "algorithm_label": "North-South Sweep",
+      "runs": 2,
+      "route_valid_rate": 1,
+      "total_km_mean": 52.335,
+      "total_km_median": 52.335,
+      "total_km_min": 47.57,
+      "total_km_max": 57.1,
+      "total_km_stddev": 4.765,
+      "eta_mean_min": 125.5,
+      "eta_median_min": 125.5,
+      "eta_min_min": 114,
+      "eta_max_min": 137,
+      "eta_stddev_min": 11.5
+    },
+    {
+      "algorithm_id": "paired_order_greedy",
+      "algorithm_label": "Greedy Paired Orders",
+      "runs": 2,
+      "route_valid_rate": 1,
+      "total_km_mean": 51.6,
+      "total_km_median": 51.6,
+      "total_km_min": 41.22,
+      "total_km_max": 61.98,
+      "total_km_stddev": 10.38,
+      "eta_mean_min": 124,
+      "eta_median_min": 124,
+      "eta_min_min": 99,
+      "eta_max_min": 149,
+      "eta_stddev_min": 25
+    },
+    {
+      "algorithm_id": "pickup_sweep_then_dropoff",
+      "algorithm_label": "Pickup Sweep Then Dropoff Sweep",
+      "runs": 2,
+      "route_valid_rate": 1,
+      "total_km_mean": 37.415,
+      "total_km_median": 37.415,
+      "total_km_min": 32.94,
+      "total_km_max": 41.89,
+      "total_km_stddev": 4.475,
+      "eta_mean_min": 90,
+      "eta_median_min": 90,
+      "eta_min_min": 79,
+      "eta_max_min": 101,
+      "eta_stddev_min": 11
+    }
+  ]
+}

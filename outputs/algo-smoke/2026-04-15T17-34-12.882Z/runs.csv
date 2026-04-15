@@ -1,0 +1,13 @@
+batch_index,batch_seed,algorithm_id,algorithm_label,driver_id,order_count,stop_count,total_km,eta_minutes,route_valid,default_algorithm_id
+1,20260305,greedy_nearest,Greedy Nearest Stop,driver_1,4,8,37.15,89,true,greedy_nearest
+1,20260305,paired_order_greedy,Greedy Paired Orders,driver_1,4,8,41.22,99,true,greedy_nearest
+1,20260305,farthest_order_first,Farthest Order First,driver_1,4,8,48.56,117,true,greedy_nearest
+1,20260305,pickup_sweep_then_dropoff,Pickup Sweep Then Dropoff Sweep,driver_1,4,8,41.89,101,true,greedy_nearest
+1,20260305,north_south_sweep,North-South Sweep,driver_1,4,8,47.57,114,true,greedy_nearest
+1,20260305,longitude_bounce,East-West Bounce,driver_1,4,8,43.33,104,true,greedy_nearest
+2,20260306,greedy_nearest,Greedy Nearest Stop,driver_2,4,8,37.31,90,true,greedy_nearest
+2,20260306,paired_order_greedy,Greedy Paired Orders,driver_2,4,8,61.98,149,true,greedy_nearest
+2,20260306,farthest_order_first,Farthest Order First,driver_2,4,8,63.01,151,true,greedy_nearest
+2,20260306,pickup_sweep_then_dropoff,Pickup Sweep Then Dropoff Sweep,driver_2,4,8,32.94,79,true,greedy_nearest
+2,20260306,north_south_sweep,North-South Sweep,driver_2,4,8,57.1,137,true,greedy_nearest
+2,20260306,longitude_bounce,East-West Bounce,driver_2,4,8,60.69,146,true,greedy_nearest

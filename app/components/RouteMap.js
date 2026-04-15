@@ -16,6 +16,8 @@ const PLAYBACK_SPEEDS = [
   { value: 1, label: "1x" },
   { value: 2, label: "2x" },
   { value: 4, label: "4x" },
+  { value: 10, label: "10x" },
+  { value: 100, label: "100x" },
 ];
 
 const defaultCenter = [39.7684, -86.1581];
@@ -126,6 +128,101 @@ function buildProgressPath(driver, stops, roadPath, completedStopCount, totalKm,
   );
 }
 
+function buildPathSegments(pathPoints) {
+  if (!Array.isArray(pathPoints) || pathPoints.length < 2) {
+    return { totalKm: 0, cumulativeKm: [0] };
+  }
+
+  const cumulativeKm = [0];
+  let totalKm = 0;
+
+  for (let i = 1; i < pathPoints.length; i += 1) {
+    const [prevLat, prevLng] = pathPoints[i - 1];
+    const [nextLat, nextLng] = pathPoints[i];
+    totalKm += haversineKm({ lat: prevLat, lng: prevLng }, { lat: nextLat, lng: nextLng });
+    cumulativeKm.push(totalKm);
+  }
+
+  return { totalKm, cumulativeKm };
+}
+
+function interpolateAlongPath(pathPoints, targetKm) {
+  if (!Array.isArray(pathPoints) || pathPoints.length === 0) return defaultCenter;
+  if (pathPoints.length === 1) return pathPoints[0];
+
+  const { totalKm, cumulativeKm } = buildPathSegments(pathPoints);
+  if (totalKm <= 0) return pathPoints[0];
+
+  const safeTargetKm = Math.min(Math.max(0, targetKm), totalKm);
+
+  for (let i = 1; i < cumulativeKm.length; i += 1) {
+    if (safeTargetKm <= cumulativeKm[i]) {
+      const segmentStartKm = cumulativeKm[i - 1];
+      const segmentEndKm = cumulativeKm[i];
+      const segmentKm = segmentEndKm - segmentStartKm || 1;
+      const ratio = (safeTargetKm - segmentStartKm) / segmentKm;
+      const [startLat, startLng] = pathPoints[i - 1];
+      const [endLat, endLng] = pathPoints[i];
+
+      return [
+        startLat + (endLat - startLat) * ratio,
+        startLng + (endLng - startLng) * ratio,
+      ];
+    }
+  }
+
+  return pathPoints[pathPoints.length - 1];
+}
+
+function getCompletedStopCount(currentMinutes, timelineEvents, stopCount) {
+  if (!timelineEvents.length) return 0;
+
+  let completed = 0;
+
+  for (const event of timelineEvents) {
+    if (
+      (event.kind === "PICKUP" || event.kind === "DROPOFF") &&
+      event.etaMinutes <= currentMinutes
+    ) {
+      completed = Math.max(completed, event.stopIndex + 1);
+    }
+  }
+
+  return Math.min(stopCount, completed);
+}
+
+function getActiveStopIndex(currentMinutes, timelineEvents, stopCount) {
+  if (!timelineEvents.length || stopCount === 0) return -1;
+
+  for (const event of timelineEvents) {
+    if (
+      (event.kind === "PICKUP" || event.kind === "DROPOFF") &&
+      event.etaMinutes > currentMinutes
+    ) {
+      return event.stopIndex;
+    }
+  }
+
+  return stopCount - 1;
+}
+
+function getCurrentEvent(currentMinutes, timelineEvents) {
+  if (!timelineEvents.length) return null;
+
+  let current = timelineEvents[0];
+
+  for (const event of timelineEvents) {
+    if (event.etaMinutes <= currentMinutes) current = event;
+    else break;
+  }
+
+  return current;
+}
+
+function getNextEvent(currentMinutes, timelineEvents) {
+  return timelineEvents.find((event) => event.etaMinutes > currentMinutes) ?? null;
+}
+
 function buildTimeline(driver, stops, totalKm, etaMinutes) {
   if (!driver) return [];
 
@@ -209,7 +306,7 @@ export default function RouteMap() {
   const [distanceUnit, setDistanceUnit] = useState("km");
   const [playbackSpeed, setPlaybackSpeed] = useState(1);
   const [isPlaying, setIsPlaying] = useState(false);
-  const [eventIndex, setEventIndex] = useState(0);
+  const [simulatedMinutes, setSimulatedMinutes] = useState(0);
   const [data, setData] = useState(null);
   const [error, setError] = useState("");
 
@@ -221,7 +318,7 @@ export default function RouteMap() {
         setError("");
         setData(null);
         setIsPlaying(false);
-        setEventIndex(0);
+        setSimulatedMinutes(0);
 
         const params = new URLSearchParams({
           scenario: scenarioId,
@@ -262,45 +359,49 @@ export default function RouteMap() {
   const scenarios = data?.availableScenarios ?? [];
   const algorithms = data?.availableAlgorithms ?? [];
   const timelineEvents = buildTimeline(driver, stops, plan?.totalKm, plan?.etaMinutes);
+  const routeDurationMinutes = Number.isFinite(plan?.etaMinutes) ? plan.etaMinutes : 0;
 
   useEffect(() => {
-    setEventIndex(0);
+    setSimulatedMinutes(0);
     setIsPlaying(false);
   }, [scenarioId, algorithmId, data?.scenario?.id, data?.algorithm?.id]);
 
   useEffect(() => {
-    if (!isPlaying || timelineEvents.length <= 1) return undefined;
-    if (eventIndex >= timelineEvents.length - 1) {
+    if (!isPlaying || routeDurationMinutes <= 0) return undefined;
+    if (simulatedMinutes >= routeDurationMinutes) {
       setIsPlaying(false);
       return undefined;
     }
 
-    const delay = Math.max(250, Math.round(1400 / playbackSpeed));
-    const timer = window.setTimeout(() => {
-      setEventIndex((current) => {
-        if (current >= timelineEvents.length - 1) {
+    let lastTick = performance.now();
+    let frameId = 0;
+
+    function tick(now) {
+      const deltaMs = now - lastTick;
+      lastTick = now;
+
+      setSimulatedMinutes((current) => {
+        const next = current + (deltaMs / 1000) * (playbackSpeed / 60);
+        if (next >= routeDurationMinutes) {
           setIsPlaying(false);
-          return current;
+          return routeDurationMinutes;
         }
-        return current + 1;
+        return next;
       });
-    }, delay);
 
-    return () => window.clearTimeout(timer);
-  }, [isPlaying, eventIndex, playbackSpeed, timelineEvents.length]);
+      frameId = window.requestAnimationFrame(tick);
+    }
 
-  const safeEventIndex = Math.min(eventIndex, Math.max(0, timelineEvents.length - 1));
-  const currentEvent = timelineEvents[safeEventIndex] ?? null;
-  const activeStopIndex =
-    currentEvent?.kind === "PICKUP" || currentEvent?.kind === "DROPOFF"
-      ? currentEvent.stopIndex
-      : -1;
-  const completedStopCount =
-    currentEvent?.kind === "COMPLETE"
-      ? stops.length
-      : currentEvent?.kind === "PICKUP" || currentEvent?.kind === "DROPOFF"
-        ? currentEvent.stopIndex
-        : -1;
+    frameId = window.requestAnimationFrame(tick);
+
+    return () => window.cancelAnimationFrame(frameId);
+  }, [isPlaying, playbackSpeed, routeDurationMinutes, simulatedMinutes]);
+
+  const clampedMinutes = Math.min(simulatedMinutes, routeDurationMinutes);
+  const currentEvent = getCurrentEvent(clampedMinutes, timelineEvents);
+  const nextEvent = getNextEvent(clampedMinutes, timelineEvents);
+  const completedStopCount = getCompletedStopCount(clampedMinutes, timelineEvents, stops.length);
+  const activeStopIndex = getActiveStopIndex(clampedMinutes, timelineEvents, stops.length);
 
   const mapPath =
     Array.isArray(roadPath) && roadPath.length >= 2
@@ -311,36 +412,46 @@ export default function RouteMap() {
     driver,
     stops,
     roadPath,
-    completedStopCount,
+    completedStopCount - 1,
     plan?.totalKm,
-    currentEvent?.totalKm
+    routeDurationMinutes > 0 ? (clampedMinutes / routeDurationMinutes) * (plan?.totalKm ?? 0) : 0
+  );
+  const currentDriverPosition = interpolateAlongPath(
+    mapPath,
+    routeDurationMinutes > 0 ? (clampedMinutes / routeDurationMinutes) * (plan?.totalKm ?? 0) : 0
   );
 
   const center = getCenter(driver, stops);
   const distanceUnitLabel = distanceUnit === "mi" ? "mi" : "km";
-  const completedStops = Math.max(0, Math.min(stops.length, completedStopCount + 1));
+  const completedStops = Math.max(0, Math.min(stops.length, completedStopCount));
   const progressPercent =
-    timelineEvents.length > 1 ? Math.round((safeEventIndex / (timelineEvents.length - 1)) * 100) : 0;
+    routeDurationMinutes > 0 ? Math.round((clampedMinutes / routeDurationMinutes) * 100) : 0;
 
   function stepBackward() {
     setIsPlaying(false);
-    setEventIndex((current) => Math.max(0, current - 1));
+    const currentIndex = timelineEvents.findIndex((event) => event.id === currentEvent?.id);
+    const targetIndex = Math.max(0, currentIndex - 1);
+    setSimulatedMinutes(timelineEvents[targetIndex]?.etaMinutes ?? 0);
   }
 
   function stepForward() {
     setIsPlaying(false);
-    setEventIndex((current) => Math.min(Math.max(0, timelineEvents.length - 1), current + 1));
+    if (nextEvent) {
+      setSimulatedMinutes(nextEvent.etaMinutes);
+      return;
+    }
+    setSimulatedMinutes(routeDurationMinutes);
   }
 
   function resetPlayback() {
     setIsPlaying(false);
-    setEventIndex(0);
+    setSimulatedMinutes(0);
   }
 
   function togglePlayback() {
-    if (timelineEvents.length <= 1) return;
-    if (safeEventIndex >= timelineEvents.length - 1) {
-      setEventIndex(0);
+    if (routeDurationMinutes <= 0) return;
+    if (clampedMinutes >= routeDurationMinutes) {
+      setSimulatedMinutes(0);
       setIsPlaying(true);
       return;
     }
@@ -428,7 +539,7 @@ export default function RouteMap() {
                   cursor: "pointer",
                 }}
               >
-                {isPlaying ? "Pause" : safeEventIndex >= timelineEvents.length - 1 ? "Replay" : "Play"}
+                {isPlaying ? "Pause" : clampedMinutes >= routeDurationMinutes ? "Replay" : "Play"}
               </button>
               <button
                 type="button"
@@ -540,11 +651,12 @@ export default function RouteMap() {
                 )}
 
                 {driver && (
-                  <Marker position={[driver.lat, driver.lng]} icon={driverIcon}>
+                  <Marker position={currentDriverPosition} icon={driverIcon}>
                     <Popup>
                       <div>
-                        <strong>Driver Start</strong>
+                        <strong>Driver Position</strong>
                         <div>ID: {driver.id}</div>
+                        <div>Simulated time: {formatClockMinutes(clampedMinutes)}</div>
                       </div>
                     </Popup>
                   </Marker>
@@ -553,7 +665,7 @@ export default function RouteMap() {
                 {stops.map((stop, index) => {
                   let icon = undefined;
                   if (index === activeStopIndex) icon = activeStopIcon;
-                  else if (index <= completedStopCount) icon = completedStopIcon;
+                  else if (index < completedStopCount) icon = completedStopIcon;
 
                   return (
                     <Marker
@@ -625,7 +737,7 @@ export default function RouteMap() {
                     Simulated Time
                   </div>
                   <div style={{ marginTop: 8, fontSize: 26, fontWeight: 700 }}>
-                    {formatClockMinutes(currentEvent?.etaMinutes)}
+                    {formatClockMinutes(clampedMinutes)}
                   </div>
                 </div>
                 <div style={{ borderRadius: 18, background: "#faf7f2", padding: 14 }}>
@@ -633,7 +745,7 @@ export default function RouteMap() {
                     Distance Covered
                   </div>
                   <div style={{ marginTop: 8, fontSize: 26, fontWeight: 700 }}>
-                    {formatDistance(currentEvent?.totalKm ?? 0, distanceUnit)} {distanceUnitLabel}
+                    {formatDistance(routeDurationMinutes > 0 ? (clampedMinutes / routeDurationMinutes) * (plan?.totalKm ?? 0) : 0, distanceUnit)} {distanceUnitLabel}
                   </div>
                 </div>
                 <div style={{ borderRadius: 18, background: "#faf7f2", padding: 14 }}>
@@ -683,8 +795,8 @@ export default function RouteMap() {
               </div>
               <div style={{ marginTop: 14, display: "grid", gap: 10 }}>
                 {timelineEvents.map((event, index) => {
-                  const isCurrent = index === safeEventIndex;
-                  const isComplete = index < safeEventIndex;
+                  const isCurrent = currentEvent?.id === event.id;
+                  const isComplete = event.etaMinutes < clampedMinutes;
                   const eventStateColor = isCurrent ? event.accent : isComplete ? "#16a34a" : "#d6d3d1";
 
                   return (
@@ -693,13 +805,17 @@ export default function RouteMap() {
                       type="button"
                       onClick={() => {
                         setIsPlaying(false);
-                        setEventIndex(index);
+                        setSimulatedMinutes(event.etaMinutes);
                       }}
                       style={{
                         textAlign: "left",
                         borderRadius: 18,
-                        border: isCurrent ? `1px solid ${event.accent}` : "1px solid #e7e5e4",
-                        background: isCurrent ? "rgba(255,247,237,0.9)" : "#fff",
+                        border:
+                          currentEvent?.id === event.id
+                            ? `1px solid ${event.accent}`
+                            : "1px solid #e7e5e4",
+                        background:
+                          currentEvent?.id === event.id ? "rgba(255,247,237,0.9)" : "#fff",
                         padding: 14,
                         cursor: "pointer",
                       }}
