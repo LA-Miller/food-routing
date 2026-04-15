@@ -13,3 +13,4 @@
   - end: `39.76957, -86.17374`
 - Added a distance unit selector (`km`/`mi`) to the route demo UI and distance conversion for displayed totals.
 - Established this `CHANGELOG.md`; future changes should append a new dated entry.
+- Added seeded batch experiment runner CLI that outputs `runs.csv`, `summary_by_algorithm.csv`, and `summary.json` via `npm run experiment`.
