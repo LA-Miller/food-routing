@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { MapContainer, Marker, Polyline, Popup, TileLayer } from "react-leaflet";
 import L from "leaflet";
 
@@ -156,13 +156,18 @@ function getOrderStatus(order, simulatedMinutes) {
 function createDriverIcon(color, label) {
   return L.divIcon({
     className: "simulation-driver-icon",
-    html: `<div style="display:flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:9999px;background:${color};border:3px solid #ffffff;box-shadow:0 0 0 3px rgba(255,255,255,0.35);font-size:10px;font-weight:700;color:#ffffff;">${label}</div>`,
-    iconSize: [28, 28],
-    iconAnchor: [14, 14],
+    html: `<div style="display:flex;align-items:center;justify-content:center;width:34px;height:34px;border-radius:12px;background:${color};border:4px solid #ffffff;box-shadow:0 0 0 4px rgba(28,25,23,0.18), 0 10px 18px rgba(28,25,23,0.26);font-size:11px;font-weight:800;color:#ffffff;">${label}</div>`,
+    iconSize: [34, 34],
+    iconAnchor: [17, 17],
   });
 }
 
-function createOrderIcon(kind, status) {
+function getOrderNumber(orderId) {
+  const digits = String(orderId).replace(/\D/g, "");
+  return digits || orderId;
+}
+
+function createOrderIcon(label, status) {
   const palette = {
     waiting: { bg: "#f59e0b", text: "#1c1917" },
     in_transit: { bg: "#2563eb", text: "#ffffff" },
@@ -173,10 +178,10 @@ function createOrderIcon(kind, status) {
   const { bg, text } = palette[status] ?? palette.hidden;
 
   return L.divIcon({
-    className: `simulation-${kind}-icon`,
-    html: `<div style="display:flex;align-items:center;justify-content:center;width:20px;height:20px;border-radius:9999px;background:${bg};border:2px solid #ffffff;box-shadow:0 0 0 2px rgba(255,255,255,0.25);font-size:9px;font-weight:700;color:${text};">${kind === "pickup" ? "P" : "D"}</div>`,
-    iconSize: [20, 20],
-    iconAnchor: [10, 10],
+    className: "simulation-order-icon",
+    html: `<div style="display:flex;align-items:center;justify-content:center;min-width:28px;height:20px;padding:0 6px;border-radius:9999px;background:${bg};border:2px solid #ffffff;box-shadow:0 0 0 1px rgba(28,25,23,0.10);font-size:9px;font-weight:800;color:${text};letter-spacing:0.02em;">${label}</div>`,
+    iconSize: [32, 20],
+    iconAnchor: [16, 10],
   });
 }
 
@@ -184,6 +189,7 @@ export default function OngoingSimulationView({ simulation, distanceUnit }) {
   const [isPlaying, setIsPlaying] = useState(false);
   const [playbackSpeed, setPlaybackSpeed] = useState(10);
   const [simulatedMinutes, setSimulatedMinutes] = useState(0);
+  const isPlayingRef = useRef(false);
 
   const durationMinutes = simulation?.durationMinutes ?? 0;
   const events = simulation?.events ?? [];
@@ -195,30 +201,34 @@ export default function OngoingSimulationView({ simulation, distanceUnit }) {
 
   useEffect(() => {
     if (!isPlaying || durationMinutes <= 0) return undefined;
-    if (clampedMinutes >= durationMinutes) return undefined;
 
     let lastTick = performance.now();
     let frameId = 0;
 
     function tick(now) {
+      if (!isPlayingRef.current) return;
+
       const deltaMs = now - lastTick;
       lastTick = now;
 
       setSimulatedMinutes((current) => {
         const next = current + (deltaMs / 1000) * (playbackSpeed / 60);
         if (next >= durationMinutes) {
+          isPlayingRef.current = false;
           setIsPlaying(false);
           return durationMinutes;
         }
         return next;
       });
 
-      frameId = window.requestAnimationFrame(tick);
+      if (isPlayingRef.current) {
+        frameId = window.requestAnimationFrame(tick);
+      }
     }
 
     frameId = window.requestAnimationFrame(tick);
     return () => window.cancelAnimationFrame(frameId);
-  }, [isPlaying, playbackSpeed, durationMinutes, clampedMinutes]);
+  }, [isPlaying, playbackSpeed, durationMinutes]);
 
   const driverStates = drivers.map((driver) => ({
     ...driver,
@@ -233,6 +243,10 @@ export default function OngoingSimulationView({ simulation, distanceUnit }) {
   ).length;
   const completedOrders = orders.filter((order) => clampedMinutes >= order.dropoffMinute).length;
   const busyDrivers = driverStates.filter((driver) => driver.playback.busy).length;
+
+  useEffect(() => {
+    isPlayingRef.current = isPlaying;
+  }, [isPlaying]);
 
   function togglePlayback() {
     if (durationMinutes <= 0) return;
@@ -321,6 +335,40 @@ export default function OngoingSimulationView({ simulation, distanceUnit }) {
             </div>
           </div>
         </div>
+
+        <div
+          style={{
+            display: "flex",
+            flexWrap: "wrap",
+            gap: 12,
+            alignItems: "center",
+            padding: "12px 14px",
+            borderRadius: 18,
+            background: "#faf7f2",
+          }}
+        >
+          <strong style={{ fontSize: 13, color: "#7c2d12" }}>Legend</strong>
+          <span style={{ display: "inline-flex", alignItems: "center", gap: 8, fontSize: 13, color: "#57534e" }}>
+            <span style={{ width: 18, height: 18, borderRadius: 6, background: "#1d4ed8", border: "2px solid #fff", boxShadow: "0 0 0 2px rgba(28,25,23,0.14)" }} />
+            Driver
+          </span>
+          <span style={{ display: "inline-flex", alignItems: "center", gap: 8, fontSize: 13, color: "#57534e" }}>
+            <span style={{ width: 14, height: 14, borderRadius: 999, background: "#f59e0b", border: "2px solid #fff" }} />
+            Waiting pickup
+          </span>
+          <span style={{ display: "inline-flex", alignItems: "center", gap: 8, fontSize: 13, color: "#57534e" }}>
+            <span style={{ width: 14, height: 14, borderRadius: 999, background: "#2563eb", border: "2px solid #fff" }} />
+            In-transit order
+          </span>
+          <span style={{ display: "inline-flex", alignItems: "center", gap: 8, fontSize: 13, color: "#57534e" }}>
+            <span style={{ width: 14, height: 14, borderRadius: 999, background: "#16a34a", border: "2px solid #fff" }} />
+            Completed order
+          </span>
+          <span style={{ display: "inline-flex", alignItems: "center", gap: 8, fontSize: 13, color: "#57534e" }}>
+            <span style={{ width: 22, height: 4, borderRadius: 999, background: "#1d4ed8", display: "inline-block" }} />
+            Driver route trail
+          </span>
+        </div>
       </section>
 
       <section style={{ display: "grid", gap: 18, gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))", alignItems: "start" }}>
@@ -349,9 +397,20 @@ export default function OngoingSimulationView({ simulation, distanceUnit }) {
             {orders.map((order) => {
               const status = getOrderStatus(order, clampedMinutes);
               if (status === "hidden") return null;
+              const orderNumber = getOrderNumber(order.id);
 
               return (
-                <Marker key={`${order.id}-pickup`} position={[order.restaurant.lat, order.restaurant.lng]} icon={createOrderIcon("pickup", status)}>
+                <Marker
+                  key={`${order.id}-pickup`}
+                  position={[order.restaurant.lat, order.restaurant.lng]}
+                  icon={
+                    status === "completed"
+                      ? createOrderIcon(`${orderNumber}P`, "completed")
+                      : status === "in_transit"
+                        ? createOrderIcon(`${orderNumber}P`, "in_transit")
+                        : createOrderIcon(`${orderNumber}P`, "waiting")
+                  }
+                >
                   <Popup>
                     <div>
                       <strong>{order.restaurantName}</strong>
@@ -366,10 +425,21 @@ export default function OngoingSimulationView({ simulation, distanceUnit }) {
 
             {orders.map((order) => {
               const status = getOrderStatus(order, clampedMinutes);
-              if (status === "hidden" || clampedMinutes < order.pickupMinute) return null;
+              if (status === "hidden") return null;
+              const orderNumber = getOrderNumber(order.id);
 
               return (
-                <Marker key={`${order.id}-dropoff`} position={[order.customer.lat, order.customer.lng]} icon={createOrderIcon("dropoff", status)}>
+                <Marker
+                  key={`${order.id}-dropoff`}
+                  position={[order.customer.lat, order.customer.lng]}
+                  icon={
+                    status === "completed"
+                      ? createOrderIcon(`${orderNumber}D`, "completed")
+                      : status === "in_transit"
+                        ? createOrderIcon(`${orderNumber}D`, "in_transit")
+                        : createOrderIcon(`${orderNumber}D`, "waiting")
+                  }
+                >
                   <Popup>
                     <div>
                       <strong>{order.customerName}</strong>
@@ -382,7 +452,11 @@ export default function OngoingSimulationView({ simulation, distanceUnit }) {
             })}
 
             {driverStates.map((driver) => (
-              <Marker key={driver.id} position={driver.playback.position} icon={createDriverIcon(driver.color, driver.id.replace("d", ""))}>
+              <Marker
+                key={driver.id}
+                position={driver.playback.position}
+                icon={createDriverIcon(driver.color, driver.id.replace("d", ""))}
+              >
                 <Popup>
                   <div>
                     <strong>{driver.id}</strong>
