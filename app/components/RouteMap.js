@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { MapContainer, Marker, Polyline, Popup, TileLayer } from "react-leaflet";
 import L from "leaflet";
+import OngoingSimulationView from "./OngoingSimulationView";
 
 delete L.Icon.Default.prototype._getIconUrl;
 L.Icon.Default.mergeOptions({
@@ -358,6 +359,7 @@ export default function RouteMap() {
   const roadPath = plan?.roadPath ?? [];
   const scenarios = data?.availableScenarios ?? [];
   const algorithms = data?.availableAlgorithms ?? [];
+  const isSimulationScenario = Boolean(data?.simulation) || scenarioId === "ongoing_dispatch_demo";
   const timelineEvents = buildTimeline(driver, stops, plan?.totalKm, plan?.etaMinutes);
   const routeDurationMinutes = Number.isFinite(plan?.etaMinutes) ? plan.etaMinutes : 0;
 
@@ -495,6 +497,7 @@ export default function RouteMap() {
             id="algorithm-select"
             value={algorithmId}
             onChange={(e) => setAlgorithmId(e.target.value)}
+            disabled={isSimulationScenario}
             style={{ padding: "8px 10px", borderRadius: 999, border: "1px solid #d6d3d1", background: "#fff" }}
           >
             {algorithms.length > 0 ? (
@@ -519,6 +522,12 @@ export default function RouteMap() {
             <option value="mi">Miles (mi)</option>
           </select>
         </div>
+
+        {isSimulationScenario && (
+          <div style={{ fontSize: 13, color: "#7c2d12" }}>
+            This scenario uses an availability + distance dispatch policy instead of the single-route algorithm selector.
+          </div>
+        )}
 
         <div style={{ display: "grid", gap: 10, gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))" }}>
           <div style={{ borderRadius: 18, background: "#faf7f2", padding: 14 }}>
@@ -619,8 +628,15 @@ export default function RouteMap() {
 
       {error && <p style={{ color: "crimson" }}>Error: {error}</p>}
       {!data && !error && <p>Loading route...</p>}
+      {data?.simulation && (
+        <OngoingSimulationView
+          key={`${data.scenario?.id ?? scenarioId}-${data.simulation.durationMinutes ?? 0}`}
+          simulation={data.simulation}
+          distanceUnit={distanceUnit}
+        />
+      )}
 
-      {data && (
+      {data && !data.simulation && (
         <>
           <section
             style={{

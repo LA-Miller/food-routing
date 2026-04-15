@@ -7,6 +7,7 @@ import {
 } from "@/lib/routing";
 
 const DEFAULT_SCENARIO = "downtown_two_orders";
+const DEFAULT_SIMULATION_POLICY = "availability_then_distance";
 
 const SCENARIOS = {
     downtown_two_orders: {
@@ -135,10 +136,91 @@ const SCENARIOS = {
             },
         ],
     },
+    ongoing_dispatch_demo: {
+        label: "Ongoing Dispatch (3 Drivers)",
+        description: "Incoming orders arrive periodically and are assigned using driver availability plus pickup distance.",
+        kind: "ongoing_dispatch",
+        drivers: [
+            { id: "dA", lat: 39.7684, lng: -86.1581, color: "#1d4ed8" },
+            { id: "dB", lat: 39.7759, lng: -86.1454, color: "#b45309" },
+            { id: "dC", lat: 39.7588, lng: -86.1706, color: "#047857" },
+        ],
+        orders: [
+            {
+                id: "sim1",
+                createdMinute: 0,
+                restaurantName: "Monument Cafe",
+                customerName: "Order 1",
+                restaurant: { lat: 39.7688, lng: -86.1589 },
+                customer: { lat: 39.7765, lng: -86.1468 },
+            },
+            {
+                id: "sim2",
+                createdMinute: 4,
+                restaurantName: "South Slice",
+                customerName: "Order 2",
+                restaurant: { lat: 39.7543, lng: -86.1684 },
+                customer: { lat: 39.7448, lng: -86.1561 },
+            },
+            {
+                id: "sim3",
+                createdMinute: 8,
+                restaurantName: "Lockerbie Sushi",
+                customerName: "Order 3",
+                restaurant: { lat: 39.7738, lng: -86.1442 },
+                customer: { lat: 39.7816, lng: -86.1327 },
+            },
+            {
+                id: "sim4",
+                createdMinute: 12,
+                restaurantName: "Canal Noodles",
+                customerName: "Order 4",
+                restaurant: { lat: 39.7706, lng: -86.1715 },
+                customer: { lat: 39.7848, lng: -86.1782 },
+            },
+            {
+                id: "sim5",
+                createdMinute: 16,
+                restaurantName: "Fletcher Tacos",
+                customerName: "Order 5",
+                restaurant: { lat: 39.7526, lng: -86.1496 },
+                customer: { lat: 39.7444, lng: -86.1378 },
+            },
+            {
+                id: "sim6",
+                createdMinute: 20,
+                restaurantName: "Market Grill",
+                customerName: "Order 6",
+                restaurant: { lat: 39.7712, lng: -86.1524 },
+                customer: { lat: 39.7623, lng: -86.1394 },
+            },
+        ],
+    },
 };
 
 function roundKm(km) {
     return Math.round(km * 100) / 100;
+}
+
+function haversineKm(a, b) {
+    const R = 6371;
+    const toRad = (deg) => (deg * Math.PI) / 180;
+
+    const dLat = toRad(b.lat - a.lat);
+    const dLng = toRad(b.lng - a.lng);
+    const lat1 = toRad(a.lat);
+    const lat2 = toRad(b.lat);
+
+    const x =
+        Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+        Math.sin(dLng / 2) * Math.sin(dLng / 2) * Math.cos(lat1) * Math.cos(lat2);
+
+    return 2 * R * Math.asin(Math.sqrt(x));
+}
+
+function kmToMinutes(km) {
+    const avgSpeedKmh = 25;
+    return (km / avgSpeedKmh) * 60;
 }
 
 function toLatLngPath(osrmCoordinates) {
@@ -209,6 +291,202 @@ async function getRoadRoute(points) {
     }
 }
 
+function buildStraightPath(from, to) {
+    return [
+        [from.lat, from.lng],
+        [to.lat, to.lng],
+    ];
+}
+
+async function buildTravelSegment(driverId, orderId, kind, from, to, startMinute) {
+    const straightKm = haversineKm(from, to);
+    const straightMinutes = kmToMinutes(straightKm);
+    const route = await getRoadRoute([from, to]);
+    const path =
+        Array.isArray(route.roadPath) && route.roadPath.length >= 2
+            ? route.roadPath
+            : buildStraightPath(from, to);
+
+    return {
+        driverId,
+        orderId,
+        kind,
+        from,
+        to,
+        startMinute,
+        endMinute: startMinute + straightMinutes,
+        totalKm: straightKm,
+        path,
+    };
+}
+
+function compareEvents(a, b) {
+    const priorities = {
+        ORDER_CREATED: 0,
+        ORDER_ASSIGNED: 1,
+        PICKUP: 2,
+        DROPOFF: 3,
+    };
+
+    if (a.minute !== b.minute) return a.minute - b.minute;
+    return (priorities[a.kind] ?? 99) - (priorities[b.kind] ?? 99);
+}
+
+async function simulateOngoingDispatchScenario(scenario) {
+    const driverStates = scenario.drivers.map((driver) => ({
+        ...driver,
+        startLat: driver.lat,
+        startLng: driver.lng,
+        currentLocation: { lat: driver.lat, lng: driver.lng },
+        availableMinute: 0,
+        deliveriesCompleted: 0,
+        totalKm: 0,
+        segments: [],
+    }));
+
+    const events = [];
+    const assignedOrders = [];
+
+    for (const order of scenario.orders.slice().sort((a, b) => a.createdMinute - b.createdMinute)) {
+        events.push({
+            id: `${order.id}-created`,
+            kind: "ORDER_CREATED",
+            minute: order.createdMinute,
+            title: `Order ${order.id} created`,
+            detail: `${order.restaurantName} received a new request.`,
+            orderId: order.id,
+            driverId: null,
+            lat: order.restaurant.lat,
+            lng: order.restaurant.lng,
+        });
+
+        let bestCandidate = null;
+
+        for (const driver of driverStates) {
+            const distanceToPickupKm = haversineKm(driver.currentLocation, order.restaurant);
+            const waitMinutes = Math.max(0, driver.availableMinute - order.createdMinute);
+            const score = waitMinutes * 2 + distanceToPickupKm;
+            const candidate = { driver, distanceToPickupKm, waitMinutes, score };
+
+            if (
+                !bestCandidate ||
+                candidate.score < bestCandidate.score ||
+                (
+                    candidate.score === bestCandidate.score &&
+                    candidate.distanceToPickupKm < bestCandidate.distanceToPickupKm
+                )
+            ) {
+                bestCandidate = candidate;
+            }
+        }
+
+        const selectedDriver = bestCandidate?.driver;
+        if (!selectedDriver) continue;
+
+        const assignMinute = order.createdMinute;
+        const driveToPickupStartMinute = Math.max(order.createdMinute, selectedDriver.availableMinute);
+        const pickupSegment = await buildTravelSegment(
+            selectedDriver.id,
+            order.id,
+            "TO_PICKUP",
+            selectedDriver.currentLocation,
+            order.restaurant,
+            driveToPickupStartMinute
+        );
+        const dropoffSegment = await buildTravelSegment(
+            selectedDriver.id,
+            order.id,
+            "TO_DROPOFF",
+            order.restaurant,
+            order.customer,
+            pickupSegment.endMinute
+        );
+
+        const pickupMinute = pickupSegment.endMinute;
+        const dropoffMinute = dropoffSegment.endMinute;
+        const driverWasBusy = selectedDriver.availableMinute > order.createdMinute;
+
+        selectedDriver.segments.push(pickupSegment, dropoffSegment);
+        selectedDriver.currentLocation = { ...order.customer };
+        selectedDriver.availableMinute = dropoffMinute;
+        selectedDriver.deliveriesCompleted += 1;
+        selectedDriver.totalKm += pickupSegment.totalKm + dropoffSegment.totalKm;
+
+        assignedOrders.push({
+            ...order,
+            assignedDriverId: selectedDriver.id,
+            assignedMinute: assignMinute,
+            pickupMinute,
+            dropoffMinute,
+            pickupDistanceKm: roundKm(bestCandidate.distanceToPickupKm),
+            waitMinutes: roundKm(bestCandidate.waitMinutes),
+        });
+
+        events.push({
+            id: `${order.id}-assigned`,
+            kind: "ORDER_ASSIGNED",
+            minute: assignMinute,
+            title: `Order ${order.id} assigned`,
+            detail: `${selectedDriver.id} selected using availability + distance${driverWasBusy ? " while still completing a prior job" : ""}.`,
+            orderId: order.id,
+            driverId: selectedDriver.id,
+            lat: order.restaurant.lat,
+            lng: order.restaurant.lng,
+        });
+        events.push({
+            id: `${order.id}-pickup`,
+            kind: "PICKUP",
+            minute: pickupMinute,
+            title: "Pickup complete",
+            detail: `${selectedDriver.id} picked up ${order.restaurantName}.`,
+            orderId: order.id,
+            driverId: selectedDriver.id,
+            lat: order.restaurant.lat,
+            lng: order.restaurant.lng,
+        });
+        events.push({
+            id: `${order.id}-dropoff`,
+            kind: "DROPOFF",
+            minute: dropoffMinute,
+            title: "Delivery complete",
+            detail: `${selectedDriver.id} delivered order ${order.id}.`,
+            orderId: order.id,
+            driverId: selectedDriver.id,
+            lat: order.customer.lat,
+            lng: order.customer.lng,
+        });
+    }
+
+    const durationMinutes = Math.ceil(
+        Math.max(
+            ...driverStates.map((driver) => driver.availableMinute),
+            ...assignedOrders.map((order) => order.dropoffMinute ?? 0),
+            0
+        )
+    );
+
+    return {
+        type: "ongoing_dispatch",
+        assignmentPolicy: {
+            id: DEFAULT_SIMULATION_POLICY,
+            label: "Availability + Distance Dispatch",
+            description: "Assigns new orders to drivers using a combined score based on pickup distance and whether that driver is still busy.",
+        },
+        durationMinutes,
+        drivers: driverStates.map((driver) => ({
+            id: driver.id,
+            color: driver.color,
+            startLat: driver.startLat,
+            startLng: driver.startLng,
+            deliveriesCompleted: driver.deliveriesCompleted,
+            totalKm: roundKm(driver.totalKm),
+            segments: driver.segments,
+        })),
+        orders: assignedOrders,
+        events: events.sort(compareEvents),
+    };
+}
+
 function getAvailableScenarios() {
     return Object.entries(SCENARIOS).map(([id, scenario]) => ({
         id,
@@ -230,6 +508,27 @@ export async function GET(request) {
     const scenario = getScenarioById(requestedScenarioId);
     const algorithmId = resolveRoutingAlgorithmId(requestedAlgorithmId);
     const algorithm = getRoutingAlgorithmDetails(algorithmId);
+
+    if (scenario.kind === "ongoing_dispatch") {
+        const simulation = await simulateOngoingDispatchScenario(scenario);
+
+        return Response.json({
+            scenario: {
+                id: scenario.id,
+                label: scenario.label,
+                description: scenario.description,
+            },
+            algorithm: {
+                id: DEFAULT_SIMULATION_POLICY,
+                label: simulation.assignmentPolicy.label,
+                description: simulation.assignmentPolicy.description,
+            },
+            availableScenarios: getAvailableScenarios(),
+            availableAlgorithms: getAvailableRoutingAlgorithms(),
+            simulation,
+            issues: [],
+        });
+    }
 
     const baselinePlan = generateRoute(scenario.driver, scenario.orders, {
         algorithm: algorithmId,

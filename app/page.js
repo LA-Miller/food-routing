@@ -7,14 +7,14 @@ const metrics = [
     detail: "Downtown, lunch rush, suburb loop, cross-city, and verification cases.",
   },
   {
-    value: "2",
+    value: "6",
     label: "Routing strategies",
-    detail: "Current baseline comparisons for greedy stop selection and paired-order routing.",
+    detail: "From practical greedy baselines to intentionally silly sweep and bounce heuristics.",
   },
   {
-    value: "3",
+    value: "Live",
     label: "Experiment outputs",
-    detail: "CSV and JSON summaries generated from deterministic seeded runs.",
+    detail: "Run seeded comparisons from the browser and save CSV/JSON summaries automatically.",
   },
 ];
 
@@ -33,7 +33,7 @@ const roadmap = [
   {
     title: "Evaluation Workflow",
     description:
-      "Run repeatable batch experiments with fixed seeds to compare strategies and export summary artifacts for analysis.",
+      "Run repeatable batch experiments with fixed seeds from either the browser dashboard or the CLI, then export summary artifacts for analysis.",
   },
   {
     title: "Capstone Expansion",
@@ -70,12 +70,12 @@ export default function Home() {
             >
               Open Route Demo
             </Link>
-            <a
-              href="#project-overview"
+            <Link
+              href="/experiments"
               className="inline-flex items-center justify-center rounded-full border border-stone-300 bg-white px-5 py-3 text-sm font-semibold text-stone-800 transition hover:border-stone-950"
             >
-              View Project Overview
-            </a>
+              Open Experiments
+            </Link>
           </div>
         </header>
 
