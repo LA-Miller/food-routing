@@ -1,0 +1,4 @@
+experiment_config,runs,greedy_nearest_km,greedy_nearest_eta,paired_order_greedy_km,paired_order_greedy_eta,better
+seed42_batches3_orders4,3,25.88,62.33,35.05,84.33,greedy_nearest
+seed123_batches2_orders3,2,21.86,52.5,20.95,50.5,paired_order_greedy
+seed42_batches100_orders8,100,52.44,125.85,86.13,206.69,greedy_nearest

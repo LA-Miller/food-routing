@@ -1,65 +1,173 @@
-import Image from "next/image";
+import Link from "next/link";
+
+const metrics = [
+  {
+    value: "5",
+    label: "Built-in scenarios",
+    detail: "Downtown, lunch rush, suburb loop, cross-city, and verification cases.",
+  },
+  {
+    value: "2",
+    label: "Routing strategies",
+    detail: "Current baseline comparisons for greedy stop selection and paired-order routing.",
+  },
+  {
+    value: "3",
+    label: "Experiment outputs",
+    detail: "CSV and JSON summaries generated from deterministic seeded runs.",
+  },
+];
+
+const goals = [
+  "Compare dispatch strategies under realistic city-delivery constraints.",
+  "Visualize drivers, pickups, dropoffs, and route geometry on an interactive map.",
+  "Measure tradeoffs in total distance, ETA quality, and route behavior across scenarios.",
+];
+
+const roadmap = [
+  {
+    title: "Interactive Route Demo",
+    description:
+      "Explore scripted Indianapolis-area scenarios, switch algorithms, and inspect route shape, stop order, and distance estimates.",
+  },
+  {
+    title: "Evaluation Workflow",
+    description:
+      "Run repeatable batch experiments with fixed seeds to compare strategies and export summary artifacts for analysis.",
+  },
+  {
+    title: "Capstone Expansion",
+    description:
+      "Next milestones focus on playback controls, richer delivery metrics, batching, and fairness-aware dispatch logic.",
+  },
+];
+
+const stack = ["Next.js App Router", "React 19", "Leaflet", "Vitest", "Seeded Node experiment scripts"];
 
 export default function Home() {
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.js file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
+    <main className="min-h-screen overflow-hidden bg-[radial-gradient(circle_at_top,#fff7d8_0%,#f4efe2_38%,#e8e1d2_100%)] text-stone-900">
+      <section className="mx-auto flex w-full max-w-7xl flex-col gap-16 px-6 py-8 sm:px-10 lg:px-12">
+        <header className="flex flex-col gap-6 rounded-[2rem] border border-stone-900/10 bg-white/70 p-6 shadow-[0_20px_60px_rgba(70,52,24,0.08)] backdrop-blur md:flex-row md:items-center md:justify-between">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-[0.35em] text-amber-700">
+              Spring 2026 Capstone
+            </p>
+            <h1 className="mt-3 max-w-3xl text-4xl font-semibold tracking-tight text-stone-950 sm:text-5xl">
+              Food Delivery Routing Simulator
+            </h1>
+            <p className="mt-4 max-w-2xl text-base leading-7 text-stone-700 sm:text-lg">
+              A web-based simulator for testing how food-delivery routing strategies perform across
+              realistic city scenarios, using both baseline distance estimates and road-network
+              routing comparisons.
+            </p>
+          </div>
+
+          <div className="grid gap-3 sm:grid-cols-2 md:w-[22rem] md:grid-cols-1">
+            <Link
+              href="/route-demo"
+              className="inline-flex items-center justify-center rounded-full bg-stone-950 px-5 py-3 text-sm font-semibold text-white transition hover:bg-stone-800"
             >
-              Templates
-            </a>{" "}
-            or the{" "}
+              Open Route Demo
+            </Link>
             <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
+              href="#project-overview"
+              className="inline-flex items-center justify-center rounded-full border border-stone-300 bg-white px-5 py-3 text-sm font-semibold text-stone-800 transition hover:border-stone-950"
             >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
-    </div>
+              View Project Overview
+            </a>
+          </div>
+        </header>
+
+        <section className="grid gap-8 lg:grid-cols-[1.35fr_0.95fr] lg:items-start">
+          <div className="rounded-[2rem] bg-stone-950 px-7 py-8 text-stone-100 shadow-[0_24px_80px_rgba(41,32,17,0.22)]">
+            <p className="text-sm font-medium uppercase tracking-[0.28em] text-amber-300">
+              Problem Focus
+            </p>
+            <h2 className="mt-4 text-3xl font-semibold tracking-tight sm:text-4xl">
+              How should a delivery platform route orders when distance, ETA realism, and operational tradeoffs all matter?
+            </h2>
+            <div className="mt-6 grid gap-4 sm:grid-cols-3">
+              {metrics.map((item) => (
+                <article
+                  key={item.label}
+                  className="rounded-[1.5rem] border border-white/10 bg-white/5 p-4"
+                >
+                  <div className="text-3xl font-semibold text-amber-300">{item.value}</div>
+                  <div className="mt-2 text-sm font-semibold text-white">{item.label}</div>
+                  <p className="mt-2 text-sm leading-6 text-stone-300">{item.detail}</p>
+                </article>
+              ))}
+            </div>
+          </div>
+
+          <div className="rounded-[2rem] border border-stone-900/10 bg-white/80 p-7 shadow-[0_20px_60px_rgba(70,52,24,0.08)] backdrop-blur">
+            <p className="text-sm font-medium uppercase tracking-[0.28em] text-amber-700">
+              Current Scope
+            </p>
+            <ul className="mt-5 space-y-4 text-sm leading-6 text-stone-700 sm:text-base">
+              {goals.map((goal) => (
+                <li key={goal} className="flex gap-3">
+                  <span className="mt-1 h-2.5 w-2.5 shrink-0 rounded-full bg-amber-600" />
+                  <span>{goal}</span>
+                </li>
+              ))}
+            </ul>
+            <div className="mt-7 rounded-[1.5rem] bg-amber-50 p-5 text-sm leading-6 text-stone-700">
+              The project emphasizes system design and evaluation rather than inventing a brand-new
+              routing algorithm. The goal is to make strategy tradeoffs visible, measurable, and easy
+              to explain.
+            </div>
+          </div>
+        </section>
+
+        <section
+          id="project-overview"
+          className="grid gap-6 rounded-[2rem] border border-stone-900/10 bg-white/75 p-7 shadow-[0_20px_60px_rgba(70,52,24,0.08)] backdrop-blur lg:grid-cols-3"
+        >
+          {roadmap.map((item) => (
+            <article key={item.title} className="rounded-[1.5rem] bg-stone-100/80 p-5">
+              <h2 className="text-xl font-semibold tracking-tight text-stone-950">{item.title}</h2>
+              <p className="mt-3 text-sm leading-6 text-stone-700 sm:text-base">{item.description}</p>
+            </article>
+          ))}
+        </section>
+
+        <section className="grid gap-6 lg:grid-cols-[1fr_1.1fr]">
+          <article className="rounded-[2rem] border border-stone-900/10 bg-white/80 p-7 shadow-[0_20px_60px_rgba(70,52,24,0.08)] backdrop-blur">
+            <p className="text-sm font-medium uppercase tracking-[0.28em] text-amber-700">
+              Planned Metrics
+            </p>
+            <div className="mt-5 grid gap-3 text-sm text-stone-700 sm:grid-cols-2">
+              <div className="rounded-[1.25rem] bg-stone-100/80 p-4">Total route distance and cost proxy</div>
+              <div className="rounded-[1.25rem] bg-stone-100/80 p-4">ETA estimates and road-network comparison</div>
+              <div className="rounded-[1.25rem] bg-stone-100/80 p-4">On-time performance by scenario</div>
+              <div className="rounded-[1.25rem] bg-stone-100/80 p-4">Driver utilization and fairness expansion</div>
+            </div>
+          </article>
+
+          <article className="rounded-[2rem] bg-[linear-gradient(135deg,#7c4a14_0%,#a05b21_45%,#d79a43_100%)] p-7 text-white shadow-[0_24px_80px_rgba(109,63,18,0.24)]">
+            <p className="text-sm font-medium uppercase tracking-[0.28em] text-amber-100">
+              Tech Stack
+            </p>
+            <div className="mt-5 flex flex-wrap gap-3">
+              {stack.map((item) => (
+                <span
+                  key={item}
+                  className="rounded-full border border-white/20 bg-white/10 px-4 py-2 text-sm font-medium"
+                >
+                  {item}
+                </span>
+              ))}
+            </div>
+            <p className="mt-6 max-w-2xl text-sm leading-6 text-amber-50 sm:text-base">
+              The current build already supports scenario-based routing demos and reproducible batch
+              experiment generation, which gives us a strong foundation for final capstone polish and
+              deeper evaluation.
+            </p>
+          </article>
+        </section>
+      </section>
+    </main>
   );
 }
