@@ -66,7 +66,7 @@ export default function Home() {
           <div className="grid gap-3 sm:grid-cols-2 md:w-[22rem] md:grid-cols-1">
             <Link
               href="/route-demo"
-              className="inline-flex items-center justify-center rounded-full bg-stone-950 px-5 py-3 text-sm font-semibold text-white transition hover:bg-stone-800"
+              className="inline-flex items-center justify-center rounded-full bg-stone-950 px-5 py-3 text-sm font-semibold !text-white transition hover:bg-stone-800"
             >
               Open Route Demo
             </Link>
