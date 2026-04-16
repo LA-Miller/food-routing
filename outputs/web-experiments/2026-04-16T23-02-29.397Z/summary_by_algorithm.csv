@@ -1,0 +1,7 @@
+algorithm_id,algorithm_label,runs,route_valid_rate,total_km_mean,total_km_median,total_km_min,total_km_max,total_km_stddev,eta_mean_min,eta_median_min,eta_min_min,eta_max_min,eta_stddev_min
+farthest_order_first,Farthest Order First,12,1,85.424,80.68,73.33,108.92,12.495,205.083,193.5,176,261,29.929
+greedy_nearest,Greedy Nearest Stop,12,1,47.957,46.33,40.7,61.49,6.854,115.083,111,98,148,16.53
+longitude_bounce,East-West Bounce,12,1,79.223,76.565,65.89,103.7,10.41,190.167,184,158,249,24.996
+north_south_sweep,North-South Sweep,12,1,76.155,76.615,54.53,88.9,9.342,182.75,184,131,213,22.234
+paired_order_greedy,Greedy Paired Orders,12,1,68.988,67.855,53.52,91.4,10.96,165.667,163,128,219,26.313
+pickup_sweep_then_dropoff,Pickup Sweep Then Dropoff Sweep,12,1,48.215,48.485,40.83,59.75,4.795,115.75,116,98,143,11.439

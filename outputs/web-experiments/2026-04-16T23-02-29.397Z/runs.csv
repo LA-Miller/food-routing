@@ -1,0 +1,73 @@
+batch_index,batch_seed,algorithm_id,algorithm_label,driver_id,order_count,stop_count,total_km,eta_minutes,route_valid
+1,20260305,greedy_nearest,Greedy Nearest Stop,driver_1,6,12,49.86,120,true
+1,20260305,paired_order_greedy,Greedy Paired Orders,driver_1,6,12,67.73,163,true
+1,20260305,farthest_order_first,Farthest Order First,driver_1,6,12,76.96,185,true
+1,20260305,pickup_sweep_then_dropoff,Pickup Sweep Then Dropoff Sweep,driver_1,6,12,49.96,120,true
+1,20260305,north_south_sweep,North-South Sweep,driver_1,6,12,71.06,171,true
+1,20260305,longitude_bounce,East-West Bounce,driver_1,6,12,71.92,173,true
+2,20260306,greedy_nearest,Greedy Nearest Stop,driver_2,6,12,40.7,98,true
+2,20260306,paired_order_greedy,Greedy Paired Orders,driver_2,6,12,79.82,192,true
+2,20260306,farthest_order_first,Farthest Order First,driver_2,6,12,82.2,197,true
+2,20260306,pickup_sweep_then_dropoff,Pickup Sweep Then Dropoff Sweep,driver_2,6,12,43.03,103,true
+2,20260306,north_south_sweep,North-South Sweep,driver_2,6,12,78.61,189,true
+2,20260306,longitude_bounce,East-West Bounce,driver_2,6,12,77.5,186,true
+3,20260307,greedy_nearest,Greedy Nearest Stop,driver_3,6,12,40.81,98,true
+3,20260307,paired_order_greedy,Greedy Paired Orders,driver_3,6,12,57.4,138,true
+3,20260307,farthest_order_first,Farthest Order First,driver_3,6,12,73.33,176,true
+3,20260307,pickup_sweep_then_dropoff,Pickup Sweep Then Dropoff Sweep,driver_3,6,12,40.83,98,true
+3,20260307,north_south_sweep,North-South Sweep,driver_3,6,12,73.8,177,true
+3,20260307,longitude_bounce,East-West Bounce,driver_3,6,12,75.63,182,true
+4,20260308,greedy_nearest,Greedy Nearest Stop,driver_4,6,12,43.88,105,true
+4,20260308,paired_order_greedy,Greedy Paired Orders,driver_4,6,12,53.52,128,true
+4,20260308,farthest_order_first,Farthest Order First,driver_4,6,12,75.72,182,true
+4,20260308,pickup_sweep_then_dropoff,Pickup Sweep Then Dropoff Sweep,driver_4,6,12,48.54,116,true
+4,20260308,north_south_sweep,North-South Sweep,driver_4,6,12,54.53,131,true
+4,20260308,longitude_bounce,East-West Bounce,driver_4,6,12,71.51,172,true
+5,20260309,greedy_nearest,Greedy Nearest Stop,driver_5,6,12,61.49,148,true
+5,20260309,paired_order_greedy,Greedy Paired Orders,driver_5,6,12,65.03,156,true
+5,20260309,farthest_order_first,Farthest Order First,driver_5,6,12,79.16,190,true
+5,20260309,pickup_sweep_then_dropoff,Pickup Sweep Then Dropoff Sweep,driver_5,6,12,49.41,119,true
+5,20260309,north_south_sweep,North-South Sweep,driver_5,6,12,77.42,186,true
+5,20260309,longitude_bounce,East-West Bounce,driver_5,6,12,75.6,181,true
+6,20260310,greedy_nearest,Greedy Nearest Stop,driver_6,6,12,42.81,103,true
+6,20260310,paired_order_greedy,Greedy Paired Orders,driver_6,6,12,59.48,143,true
+6,20260310,farthest_order_first,Farthest Order First,driver_6,6,12,74.13,178,true
+6,20260310,pickup_sweep_then_dropoff,Pickup Sweep Then Dropoff Sweep,driver_6,6,12,48.98,118,true
+6,20260310,north_south_sweep,North-South Sweep,driver_6,6,12,74.24,178,true
+6,20260310,longitude_bounce,East-West Bounce,driver_6,6,12,65.89,158,true
+7,20260311,greedy_nearest,Greedy Nearest Stop,driver_7,6,12,51.31,123,true
+7,20260311,paired_order_greedy,Greedy Paired Orders,driver_7,6,12,68.31,164,true
+7,20260311,farthest_order_first,Farthest Order First,driver_7,6,12,91.53,220,true
+7,20260311,pickup_sweep_then_dropoff,Pickup Sweep Then Dropoff Sweep,driver_7,6,12,51.57,124,true
+7,20260311,north_south_sweep,North-South Sweep,driver_7,6,12,86.39,207,true
+7,20260311,longitude_bounce,East-West Bounce,driver_7,6,12,77.6,186,true
+8,20260312,greedy_nearest,Greedy Nearest Stop,driver_8,6,12,52.41,126,true
+8,20260312,paired_order_greedy,Greedy Paired Orders,driver_8,6,12,67.98,163,true
+8,20260312,farthest_order_first,Farthest Order First,driver_8,6,12,96.11,231,true
+8,20260312,pickup_sweep_then_dropoff,Pickup Sweep Then Dropoff Sweep,driver_8,6,12,48.22,116,true
+8,20260312,north_south_sweep,North-South Sweep,driver_8,6,12,78.84,189,true
+8,20260312,longitude_bounce,East-West Bounce,driver_8,6,12,78.1,187,true
+9,20260313,greedy_nearest,Greedy Nearest Stop,driver_9,6,12,48.78,117,true
+9,20260313,paired_order_greedy,Greedy Paired Orders,driver_9,6,12,73.81,177,true
+9,20260313,farthest_order_first,Farthest Order First,driver_9,6,12,84.67,203,true
+9,20260313,pickup_sweep_then_dropoff,Pickup Sweep Then Dropoff Sweep,driver_9,6,12,48.35,116,true
+9,20260313,north_south_sweep,North-South Sweep,driver_9,6,12,75.81,182,true
+9,20260313,longitude_bounce,East-West Bounce,driver_9,6,12,81.17,195,true
+10,20260314,greedy_nearest,Greedy Nearest Stop,driver_10,6,12,41.46,99,true
+10,20260314,paired_order_greedy,Greedy Paired Orders,driver_10,6,12,59.41,143,true
+10,20260314,farthest_order_first,Farthest Order First,driver_10,6,12,73.66,177,true
+10,20260314,pickup_sweep_then_dropoff,Pickup Sweep Then Dropoff Sweep,driver_10,6,12,41.51,100,true
+10,20260314,north_south_sweep,North-South Sweep,driver_10,6,12,65.72,158,true
+10,20260314,longitude_bounce,East-West Bounce,driver_10,6,12,74.17,178,true
+11,20260315,greedy_nearest,Greedy Nearest Stop,driver_11,6,12,42.69,102,true
+11,20260315,paired_order_greedy,Greedy Paired Orders,driver_11,6,12,83.96,202,true
+11,20260315,farthest_order_first,Farthest Order First,driver_11,6,12,108.7,261,true
+11,20260315,pickup_sweep_then_dropoff,Pickup Sweep Then Dropoff Sweep,driver_11,6,12,48.43,116,true
+11,20260315,north_south_sweep,North-South Sweep,driver_11,6,12,88.54,212,true
+11,20260315,longitude_bounce,East-West Bounce,driver_11,6,12,103.7,249,true
+12,20260316,greedy_nearest,Greedy Nearest Stop,driver_12,6,12,59.29,142,true
+12,20260316,paired_order_greedy,Greedy Paired Orders,driver_12,6,12,91.4,219,true
+12,20260316,farthest_order_first,Farthest Order First,driver_12,6,12,108.92,261,true
+12,20260316,pickup_sweep_then_dropoff,Pickup Sweep Then Dropoff Sweep,driver_12,6,12,59.75,143,true
+12,20260316,north_south_sweep,North-South Sweep,driver_12,6,12,88.9,213,true
+12,20260316,longitude_bounce,East-West Bounce,driver_12,6,12,97.89,235,true

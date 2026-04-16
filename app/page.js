@@ -2,47 +2,47 @@ import Link from "next/link";
 
 const metrics = [
   {
-    value: "5",
+    value: "6",
     label: "Built-in scenarios",
-    detail: "Downtown, lunch rush, suburb loop, cross-city, and verification cases.",
+    detail: "Static route cases plus an ongoing multi-driver dispatch simulation around Indianapolis.",
   },
   {
     value: "6",
     label: "Routing strategies",
-    detail: "From practical greedy baselines to intentionally silly sweep and bounce heuristics.",
+    detail: "Greedy baselines and intentionally high-contrast sweep and bounce heuristics for comparison.",
   },
   {
-    value: "Live",
-    label: "Experiment outputs",
-    detail: "Run seeded comparisons from the browser and save CSV/JSON summaries automatically.",
+    value: "Browser + CLI",
+    label: "Experiment runner",
+    detail: "Seeded batch comparisons save CSV and JSON summaries into the project outputs folder.",
   },
 ];
 
 const goals = [
-  "Compare dispatch strategies under realistic city-delivery constraints.",
-  "Visualize drivers, pickups, dropoffs, and route geometry on an interactive map.",
-  "Measure tradeoffs in total distance, ETA quality, and route behavior across scenarios.",
+  "Compare six routing heuristics across repeatable Indianapolis-area delivery scenarios.",
+  "Visualize drivers, pickups, dropoffs, event timelines, and routes on an interactive map.",
+  "Inspect both single-route playback and an ongoing dispatch simulation with multiple drivers.",
 ];
 
-const roadmap = [
+const projectSections = [
   {
     title: "Interactive Route Demo",
     description:
-      "Explore scripted Indianapolis-area scenarios, switch algorithms, and inspect route shape, stop order, and distance estimates.",
+      "Open scripted scenarios, switch among routing algorithms, and step through the route with playback controls, timeline events, and stop-by-stop map updates.",
   },
   {
-    title: "Evaluation Workflow",
+    title: "Ongoing Dispatch Simulation",
     description:
-      "Run repeatable batch experiments with fixed seeds from either the browser dashboard or the CLI, then export summary artifacts for analysis.",
+      "Use the multi-driver dispatch scenario to watch incoming orders get assigned over time with the current availability-plus-distance policy that determines what driver to give an order to.",
   },
   {
-    title: "Capstone Expansion",
+    title: "Seeded Experiment Dashboard",
     description:
-      "Next milestones focus on playback controls, richer delivery metrics, batching, and fairness-aware dispatch logic.",
+      "Run repeatable browser experiments or the CLI batch script and review saved summaries for distance, ETA, spread, and route-validity comparisons.",
   },
 ];
 
-const stack = ["Next.js App Router", "React 19", "Leaflet", "Vitest", "Seeded Node experiment scripts"];
+const stack = ["Next.js App Router", "React 19", "Leaflet", "Vitest", "Node experiment scripts", "OSRM road-routing comparison"];
 
 export default function Home() {
   return (
@@ -57,9 +57,9 @@ export default function Home() {
               Food Delivery Routing Simulator
             </h1>
             <p className="mt-4 max-w-2xl text-base leading-7 text-stone-700 sm:text-lg">
-              A web-based simulator for testing how food-delivery routing strategies perform across
-              realistic city scenarios, using both baseline distance estimates and road-network
-              routing comparisons.
+              A web-based capstone project for comparing food-delivery routing strategies across
+              scripted Indianapolis scenarios, interactive playback views, and reproducible seeded
+              experiments.
             </p>
           </div>
 
@@ -114,9 +114,9 @@ export default function Home() {
               ))}
             </ul>
             <div className="mt-7 rounded-[1.5rem] bg-amber-50 p-5 text-sm leading-6 text-stone-700">
-              The project emphasizes system design and evaluation rather than inventing a brand-new
-              routing algorithm. The goal is to make strategy tradeoffs visible, measurable, and easy
-              to explain.
+              The project emphasizes simulation, visualization, and side-by-side evaluation rather
+              than inventing a brand-new routing algorithm. The current build is focused on making
+              route behavior and tradeoffs easy to demonstrate for the final capstone review.
             </div>
           </div>
         </section>
@@ -125,7 +125,7 @@ export default function Home() {
           id="project-overview"
           className="grid gap-6 rounded-[2rem] border border-stone-900/10 bg-white/75 p-7 shadow-[0_20px_60px_rgba(70,52,24,0.08)] backdrop-blur lg:grid-cols-3"
         >
-          {roadmap.map((item) => (
+          {projectSections.map((item) => (
             <article key={item.title} className="rounded-[1.5rem] bg-stone-100/80 p-5">
               <h2 className="text-xl font-semibold tracking-tight text-stone-950">{item.title}</h2>
               <p className="mt-3 text-sm leading-6 text-stone-700 sm:text-base">{item.description}</p>
@@ -133,19 +133,7 @@ export default function Home() {
           ))}
         </section>
 
-        <section className="grid gap-6 lg:grid-cols-[1fr_1.1fr]">
-          <article className="rounded-[2rem] border border-stone-900/10 bg-white/80 p-7 shadow-[0_20px_60px_rgba(70,52,24,0.08)] backdrop-blur">
-            <p className="text-sm font-medium uppercase tracking-[0.28em] text-amber-700">
-              Planned Metrics
-            </p>
-            <div className="mt-5 grid gap-3 text-sm text-stone-700 sm:grid-cols-2">
-              <div className="rounded-[1.25rem] bg-stone-100/80 p-4">Total route distance and cost proxy</div>
-              <div className="rounded-[1.25rem] bg-stone-100/80 p-4">ETA estimates and road-network comparison</div>
-              <div className="rounded-[1.25rem] bg-stone-100/80 p-4">On-time performance by scenario</div>
-              <div className="rounded-[1.25rem] bg-stone-100/80 p-4">Driver utilization and fairness expansion</div>
-            </div>
-          </article>
-
+        <section className="grid gap-6">
           <article className="rounded-[2rem] bg-[linear-gradient(135deg,#7c4a14_0%,#a05b21_45%,#d79a43_100%)] p-7 text-white shadow-[0_24px_80px_rgba(109,63,18,0.24)]">
             <p className="text-sm font-medium uppercase tracking-[0.28em] text-amber-100">
               Tech Stack
@@ -161,9 +149,9 @@ export default function Home() {
               ))}
             </div>
             <p className="mt-6 max-w-2xl text-sm leading-6 text-amber-50 sm:text-base">
-              The current build already supports scenario-based routing demos and reproducible batch
-              experiment generation, which gives us a strong foundation for final capstone polish and
-              deeper evaluation.
+              The current build already supports scenario-based route playback, a dispatch simulation,
+              and reproducible batch experiment generation. That gives the landing page a cleaner
+              job now: point visitors to what is already working instead of what we once planned.
             </p>
           </article>
         </section>
