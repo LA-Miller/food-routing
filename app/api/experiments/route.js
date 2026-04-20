@@ -1,10 +1,27 @@
 import fs from "node:fs/promises";
+import os from "node:os";
 import path from "node:path";
 
 import { buildExperimentResult, formatExperimentCard, toCsv } from "@/lib/experimentRunner";
 
-const OUTPUT_ROOT = path.join(process.cwd(), "outputs");
 const EXPERIMENT_DIRS = ["web-experiments", "experiments", "experiments-smoke", "algo-smoke"];
+
+function getLocalOutputRoot() {
+  return path.join(process.cwd(), "outputs");
+}
+
+function getWritableOutputRoot() {
+  if (process.env.VERCEL) {
+    return path.join(os.tmpdir(), "food-routing-capstone", "outputs");
+  }
+
+  return getLocalOutputRoot();
+}
+
+function getReadableOutputRoots() {
+  const roots = [getWritableOutputRoot(), getLocalOutputRoot()];
+  return [...new Set(roots)];
+}
 
 async function ensureDir(dirPath) {
   await fs.mkdir(dirPath, { recursive: true });
@@ -13,28 +30,30 @@ async function ensureDir(dirPath) {
 async function readSummaryCards() {
   const cards = [];
 
-  for (const dirName of EXPERIMENT_DIRS) {
-    const baseDir = path.join(OUTPUT_ROOT, dirName);
+  for (const outputRoot of getReadableOutputRoots()) {
+    for (const dirName of EXPERIMENT_DIRS) {
+      const baseDir = path.join(outputRoot, dirName);
 
-    let entries = [];
-    try {
-      entries = await fs.readdir(baseDir, { withFileTypes: true });
-    } catch {
-      continue;
-    }
-
-    for (const entry of entries) {
-      if (!entry.isDirectory()) continue;
-
-      const runId = entry.name;
-      const summaryPath = path.join(baseDir, runId, "summary.json");
-
+      let entries = [];
       try {
-        const content = await fs.readFile(summaryPath, "utf8");
-        const parsed = JSON.parse(content);
-        cards.push(formatExperimentCard(parsed, runId));
+        entries = await fs.readdir(baseDir, { withFileTypes: true });
       } catch {
         continue;
+      }
+
+      for (const entry of entries) {
+        if (!entry.isDirectory()) continue;
+
+        const runId = entry.name;
+        const summaryPath = path.join(baseDir, runId, "summary.json");
+
+        try {
+          const content = await fs.readFile(summaryPath, "utf8");
+          const parsed = JSON.parse(content);
+          cards.push(formatExperimentCard(parsed, runId));
+        } catch {
+          continue;
+        }
       }
     }
   }
@@ -52,7 +71,8 @@ export async function POST(request) {
     const body = await request.json();
     const result = buildExperimentResult(body);
     const runId = new Date().toISOString().replace(/:/g, "-");
-    const outputDir = path.join(OUTPUT_ROOT, "web-experiments", runId);
+    const outputRoot = getWritableOutputRoot();
+    const outputDir = path.join(outputRoot, "web-experiments", runId);
 
     await ensureDir(outputDir);
 
