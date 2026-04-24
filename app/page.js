@@ -116,7 +116,7 @@ export default function Home() {
             <div className="mt-7 rounded-[1.5rem] bg-amber-50 p-5 text-sm leading-6 text-stone-700">
               The project emphasizes simulation, visualization, and side-by-side evaluation rather
               than inventing a brand-new routing algorithm. The current build is focused on making
-              route behavior and tradeoffs easy to demonstrate for the final capstone review.
+              route behavior and tradeoffs easy to demonstrate.
             </div>
           </div>
         </section>
@@ -148,11 +148,6 @@ export default function Home() {
                 </span>
               ))}
             </div>
-            <p className="mt-6 max-w-2xl text-sm leading-6 text-amber-50 sm:text-base">
-              The current build already supports scenario-based route playback, a dispatch simulation,
-              and reproducible batch experiment generation. That gives the landing page a cleaner
-              job now: point visitors to what is already working instead of what we once planned.
-            </p>
           </article>
         </section>
       </section>
